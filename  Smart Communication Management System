@@ -1,0 +1,567 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ */
+
+ package com.mycompany.mavenproject7;
+
+/**
+ *
+ * @author Sadia
+ */
+ import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import java.io.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+
+public class WhatsAppSystem extends JFrame {
+
+    // ================= CARD LAYOUT =================
+    CardLayout card = new CardLayout();
+    JPanel mainPanel = new JPanel(card);
+
+    // ================= DATA STRUCTURES =================
+    LinkedList<String> contacts = new LinkedList<>();//linkelist
+    HashMap<String, ArrayList<String>> chats = new HashMap<>();//hashmap
+    Queue<String> queue = new LinkedList<>();//queue data structure
+    ArrayList<String> starred = new ArrayList<>();//array with the help of array list
+    
+    // ================= ONLINE STATUS =================
+    HashMap<String, Boolean> onlineStatus = new HashMap<>();
+    
+    Color theme = new Color(245,245,220);
+
+    // ================= CONSTRUCTOR =================
+    public WhatsAppSystem() {
+        setTitle("Chat With Our WhatsApp");
+        setSize(950,600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        // Screens
+        mainPanel.add(login(),"login");
+        mainPanel.add(user(),"user");
+        mainPanel.add(admin(),"admin");
+        mainPanel.add(system(),"system");
+        mainPanel.add(mood(),"mood");
+        mainPanel.add(thankyou(),"thank");
+
+        add(mainPanel);
+        card.show(mainPanel,"login");
+
+        // ================= AUTO DELETE =================
+        new javax.swing.Timer(8000, e -> {
+            for(String u : chats.keySet()) {
+                if(!chats.get(u).isEmpty()) {
+                    chats.get(u).remove(0);
+                }
+            }
+        }).start();
+
+        setVisible(true);
+    }
+
+    // ================= APPLY THEME =================
+    void applyTheme(Container c) {
+        c.setBackground(theme);
+        for(Component comp : c.getComponents()) {
+            if(comp instanceof JPanel)
+                applyTheme((Container) comp);
+        }
+    }
+
+    // ================= BUTTON STYLE =================
+    void styleButton(JButton b) {
+        b.setFocusPainted(false);
+        b.setBackground(new Color(37,211,102));
+        b.setForeground(Color.WHITE);
+        b.setFont(new Font("Segoe UI",Font.BOLD,14));
+    }
+
+    // ================= LOGIN SCREEN =================
+    JPanel login() {
+        JPanel p = new JPanel(null);
+
+        // ================= BACKGROUND IMAGE =================
+        ImageIcon bgIcon = new ImageIcon("C:\\Users\\Sadia\\Pictures\\whatsappbg.jpg");
+        JLabel bg = new JLabel(bgIcon);
+        bg.setBounds(0,0,950,600);
+
+        // ================= TITLE =================
+        JLabel title = new JLabel("Chat With Our WhatsApp 😊😊");
+        title.setBounds(150,50,700,60);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 40));
+        title.setForeground(Color.WHITE);
+
+        // ================= BUTTONS =================
+        JButton user = new JButton("User Module");
+        JButton admin = new JButton("Admin Module");
+        JButton system = new JButton("System Automation");
+        JButton mood = new JButton("Mood / Theme");
+        JButton exit = new JButton("Exit");
+
+        styleButton(user);
+        styleButton(admin);
+        styleButton(system);
+        styleButton(mood);
+        styleButton(exit);
+
+        user.setBounds(320,140,250,40);
+        admin.setBounds(320,190,250,40);
+        system.setBounds(320,240,250,40);
+        mood.setBounds(320,290,250,40);
+        exit.setBounds(320,340,250,40);
+
+        // ================= ACTIONS =================
+        user.addActionListener(e -> card.show(mainPanel,"user"));
+        admin.addActionListener(e -> card.show(mainPanel,"admin"));
+        system.addActionListener(e -> card.show(mainPanel,"system"));
+        mood.addActionListener(e -> card.show(mainPanel,"mood"));
+        exit.addActionListener(e -> card.show(mainPanel,"thank"));
+
+        // ================= ADD COMPONENTS =================
+        bg.add(title);
+        bg.add(user);
+        bg.add(admin);
+        bg.add(system);
+        bg.add(mood);
+        bg.add(exit);
+        p.add(bg);
+        return p;
+    }
+
+    // ================= USER MODULE =================
+    JPanel user() {
+        JPanel p = new JPanel(null);
+        JButton add = new JButton("Add Contact");
+        JButton send = new JButton("Send Message");
+        JButton view = new JButton("View Chat");
+        JButton starBtn = new JButton("Starred Messages");
+        JButton pic = new JButton("Send Picture");
+        JButton note = new JButton("Open Notepad");
+        JButton back = new JButton("Back");
+
+        styleButton(add);
+        styleButton(send);
+        styleButton(view);
+        styleButton(starBtn);
+        styleButton(pic);
+        styleButton(note);
+        styleButton(back);
+
+        add.setBounds(100,120,200,40);
+        send.setBounds(350,120,200,40);
+        view.setBounds(600,120,200,40);
+        starBtn.setBounds(100,220,200,40);
+        pic.setBounds(350,220,200,40);
+        note.setBounds(600,220,200,40);
+        back.setBounds(20,500,100,35);
+
+        // ================= ADD CONTACT =================
+        add.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog("Enter Contact");
+            if(name != null) {
+                contacts.add(name);
+                chats.put(name,new ArrayList<>());
+                onlineStatus.put(name, false); // Initially offline
+                JOptionPane.showMessageDialog(this, "Contact Added Successfully");
+            }
+        });
+
+        // ================= SEND MESSAGE (same as before) =================
+        send.addActionListener(e -> {
+            JFrame f = new JFrame("Send Message");
+            f.setSize(400,300);
+            f.setLayout(null);
+
+            JComboBox<String> box = new JComboBox<>(contacts.toArray(new String[0]));
+            box.setBounds(50,40,300,30);
+            JTextField msg = new JTextField();
+            msg.setBounds(50,90,300,30);
+            JButton s = new JButton("Send");
+            styleButton(s);
+            s.setBounds(130,150,120,30);
+
+            s.addActionListener(ev -> {
+                String c = (String) box.getSelectedItem();
+                if(c == null) return;
+
+                String[] moods = {"❤️", "😡", "😊", "😎"};
+                String mood = (String) JOptionPane.showInputDialog(null, "Select Mood", "Mood", JOptionPane.QUESTION_MESSAGE, null, moods, moods[0]);
+                String finalMsg = mood + " " + msg.getText();
+
+                chats.get(c).add(finalMsg);
+
+                // ================= STAR MESSAGE =================
+                int star = JOptionPane.showConfirmDialog(null, "Star this message?");
+                if(star == 0) starred.add(finalMsg);
+
+                // ================= SMART REPLY =================
+                String[] replies = {"OK", "Thanks", "Busy", "Call me"};
+                String reply = (String) JOptionPane.showInputDialog(null, "Smart Reply", "Reply", JOptionPane.QUESTION_MESSAGE, null, replies, replies[0]);
+                if(reply != null) chats.get(c).add("Auto: " + reply);
+
+                JOptionPane.showMessageDialog(f, "Message Sent to " + c);
+            });
+
+            f.add(box);
+            f.add(msg);
+            f.add(s);
+            f.add(new JLabel("To:", JLabel.RIGHT), new Rectangle(20,45,25,20));
+            f.add(new JLabel("Message:", JLabel.RIGHT), new Rectangle(20,95,35,20));
+            f.setVisible(true);
+        });
+
+        // Other buttons remain same...
+        view.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog("Enter Contact");
+            if(chats.containsKey(name)) {
+                String all = "";
+                for(String m : chats.get(name)) all += m + "\n";
+                JOptionPane.showMessageDialog(this, all);
+            }
+        });
+
+        starBtn.addActionListener(e -> {
+            String all = "";
+            for(String s : starred) all += s + "\n";
+            JOptionPane.showMessageDialog(this, all);
+        });
+
+        pic.addActionListener(e -> {
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Images", "jpg", "png", "jpeg");
+            chooser.setFileFilter(filter);
+            int result = chooser.showOpenDialog(null);
+            if(result == JFileChooser.APPROVE_OPTION) {
+                File selected = chooser.getSelectedFile();
+                String contact = JOptionPane.showInputDialog("Send to which contact?");
+                if(chats.containsKey(contact)) {
+                    chats.get(contact).add("📷 Picture Sent: " + selected.getAbsolutePath());
+                    JOptionPane.showMessageDialog(this, "Picture Sent Successfully");
+                }
+            }
+        });
+
+        note.addActionListener(e -> {
+            JFrame noteFrame = new JFrame("My Notepad");
+            noteFrame.setSize(500,400);
+            noteFrame.setLocationRelativeTo(null);
+            JTextArea area = new JTextArea();
+            JScrollPane scroll = new JScrollPane(area);
+            JButton save = new JButton("Save Notes");
+            styleButton(save);
+
+            save.addActionListener(ev -> {
+                try {
+                    FileWriter writer = new FileWriter("notes.txt");
+                    writer.write(area.getText());
+                    writer.close();
+                    JOptionPane.showMessageDialog(noteFrame, "Notes Saved Successfully");
+                } catch(Exception ex) {
+                    JOptionPane.showMessageDialog(noteFrame, "Error Saving File");
+                }
+            });
+
+            noteFrame.setLayout(new BorderLayout());
+            noteFrame.add(scroll, BorderLayout.CENTER);
+            noteFrame.add(save, BorderLayout.SOUTH);
+            noteFrame.setVisible(true);
+        });
+
+        back.addActionListener(e -> card.show(mainPanel,"login"));
+
+        p.add(add);
+        p.add(send);
+        p.add(view);
+        p.add(starBtn);
+        p.add(pic);
+        p.add(note);
+        p.add(back);
+
+        applyTheme(p);
+        return p;
+    }
+
+    // ================= ADMIN MODULE =================
+    JPanel admin() {
+        JPanel p = new JPanel(null);
+        JButton viewC = new JButton("View Contacts");
+        JButton viewM = new JButton("View Messages");
+        JButton count = new JButton("Message Count");
+        JButton back = new JButton("Back");
+
+        styleButton(viewC);
+        styleButton(viewM);
+        styleButton(count);
+        styleButton(back);
+
+        viewC.setBounds(200,150,200,40);
+        viewM.setBounds(450,150,200,40);
+        count.setBounds(320,220,200,40);
+        back.setBounds(20,500,100,35);
+
+        viewC.addActionListener(e -> JOptionPane.showMessageDialog(this, contacts.toString()));
+        
+        viewM.addActionListener(e -> {
+            String all = "";
+            for(String c : chats.keySet()) {
+                all += "\n" + c + ":\n";
+                for(String m : chats.get(c)) all += m + "\n";
+            }
+            JOptionPane.showMessageDialog(this, all);
+        });
+
+        count.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog("Enter Contact");
+            if(chats.containsKey(name)) {
+                JOptionPane.showMessageDialog(this, "Messages: " + chats.get(name).size());
+            }
+        });
+
+        back.addActionListener(e -> card.show(mainPanel,"login"));
+
+        p.add(viewC);
+        p.add(viewM);
+        p.add(count);
+        p.add(back);
+        applyTheme(p);
+        return p;
+    }
+
+    // ================= UPDATED SYSTEM MODULE =================
+    JPanel system() {
+        JPanel p = new JPanel(null);
+
+        // Status buttons
+        JButton toggleStatus = new JButton("Toggle Online/Offline");
+        JButton viewStatus = new JButton("View All Status");
+        JButton viewAllMessages = new JButton("View All Messages");
+        JButton editMessage = new JButton("Edit Message");
+        JButton deleteMessage = new JButton("Delete Message");
+        JButton autoMsg = new JButton("Auto Message (5 sec)");
+        JButton back = new JButton("Back");
+
+        styleButton(toggleStatus);
+        styleButton(viewStatus);
+        styleButton(viewAllMessages);
+        styleButton(editMessage);
+        styleButton(deleteMessage);
+        styleButton(autoMsg);
+        styleButton(back);
+
+        toggleStatus.setBounds(100,100,200,40);
+        viewStatus.setBounds(320,100,200,40);
+        viewAllMessages.setBounds(540,100,200,40);
+        editMessage.setBounds(100,160,200,40);
+        deleteMessage.setBounds(320,160,200,40);
+        autoMsg.setBounds(540,160,200,40);
+        back.setBounds(20,500,100,35);
+
+        // ================= TOGGLE STATUS =================
+        toggleStatus.addActionListener(e -> {
+            String contact = JOptionPane.showInputDialog("Enter Contact Name:");
+            if(contacts.contains(contact)) {
+                boolean currentStatus = onlineStatus.getOrDefault(contact, false);
+                onlineStatus.put(contact, !currentStatus);
+                String status = !currentStatus ? "🟢 ONLINE" : "🔴 OFFLINE";
+                JOptionPane.showMessageDialog(this, contact + " is now " + status);
+            } else {
+                JOptionPane.showMessageDialog(this, "Contact not found!");
+            }
+        });
+
+        // ================= VIEW STATUS =================
+        viewStatus.addActionListener(e -> {
+            String allStatus = "📊 ONLINE/OFFLINE STATUS 📊\n\n";
+            for(String contact : contacts) {
+                boolean status = onlineStatus.getOrDefault(contact, false);
+                String emoji = status ? "🟢 ONLINE" : "🔴 OFFLINE";
+                allStatus += contact + " : " + emoji + "\n";
+            }
+            JOptionPane.showMessageDialog(this, allStatus, "Status Report", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        // ================= VIEW ALL MESSAGES WITH TABLE =================
+        viewAllMessages.addActionListener(e -> {
+            JFrame tableFrame = new JFrame("All Messages");
+            tableFrame.setSize(800, 500);
+            tableFrame.setLocationRelativeTo(null);
+
+            String[] columns = {"Contact", "Message", "Status"};
+            DefaultTableModel model = new DefaultTableModel(columns, 0);
+
+            for(String contact : chats.keySet()) {
+                boolean status = onlineStatus.getOrDefault(contact, false);
+                String statusText = status ? "🟢 ONLINE" : "🔴 OFFLINE";
+                
+                for(String msg : chats.get(contact)) {
+                    model.addRow(new Object[]{contact, msg, statusText});
+                }
+            }
+
+            JTable table = new JTable(model);
+            table.setRowHeight(25);
+            JScrollPane scroll = new JScrollPane(table);
+            
+            JButton refresh = new JButton("Refresh");
+            styleButton(refresh);
+            refresh.addActionListener(ev -> {
+                model.setRowCount(0);
+                for(String contact : chats.keySet()) {
+                    boolean status = onlineStatus.getOrDefault(contact, false);
+                    String statusText = status ? "🟢 ONLINE" : "🔴 OFFLINE";
+                    for(String msg : chats.get(contact)) {
+                        model.addRow(new Object[]{contact, msg, statusText});
+                    }
+                }
+            });
+
+            tableFrame.setLayout(new BorderLayout());
+            tableFrame.add(scroll, BorderLayout.CENTER);
+            tableFrame.add(refresh, BorderLayout.SOUTH);
+            tableFrame.setVisible(true);
+        });
+
+        // ================= EDIT MESSAGE =================
+        editMessage.addActionListener(e -> {
+            String contact = JOptionPane.showInputDialog("Enter Contact:");
+            if(!chats.containsKey(contact)) {
+                JOptionPane.showMessageDialog(this, "Contact not found!");
+                return;
+            }
+
+            String oldMsg = JOptionPane.showInputDialog("Enter old message to edit:");
+            ArrayList<String> messages = chats.get(contact);
+            
+            boolean found = false;
+            for(int i = 0; i < messages.size(); i++) {
+                if(messages.get(i).contains(oldMsg)) {
+                    String newMsg = JOptionPane.showInputDialog("Enter new message:");
+                    if(newMsg != null) {
+                        messages.set(i, newMsg);
+                        JOptionPane.showMessageDialog(this, "Message edited successfully!");
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found) {
+                JOptionPane.showMessageDialog(this, "Message not found!");
+            }
+        });
+
+        // ================= DELETE MESSAGE =================
+        deleteMessage.addActionListener(e -> {
+            String contact = JOptionPane.showInputDialog("Enter Contact:");
+            if(!chats.containsKey(contact)) {
+                JOptionPane.showMessageDialog(this, "Contact not found!");
+                return;
+            }
+
+            String msgToDelete = JOptionPane.showInputDialog("Enter message to delete:");
+            ArrayList<String> messages = chats.get(contact);
+            
+            Iterator<String> iterator = messages.iterator();
+            boolean deleted = false;
+            
+            while(iterator.hasNext()) {
+                String msg = iterator.next();
+                if(msg.contains(msgToDelete)) {
+                    iterator.remove();
+                    deleted = true;
+                    JOptionPane.showMessageDialog(this, "Message deleted successfully!");
+                    break;
+                }
+            }
+            
+            if(!deleted) {
+                JOptionPane.showMessageDialog(this, "Message not found!");
+            }
+        });
+
+        // ================= AUTO MESSAGE =================
+        autoMsg.addActionListener(e -> {
+            String msg = JOptionPane.showInputDialog("Enter Message");
+            if(!contacts.isEmpty()) {
+                String contact = contacts.getFirst();
+                new javax.swing.Timer(5000, ev -> {
+                    chats.get(contact).add("⏰ Auto: " + msg);
+                    JOptionPane.showMessageDialog(this, "Auto sent to " + contact);
+                }).start();
+            }
+        });
+
+        back.addActionListener(e -> card.show(mainPanel,"login"));
+
+        p.add(toggleStatus);
+        p.add(viewStatus);
+        p.add(viewAllMessages);
+        p.add(editMessage);
+        p.add(deleteMessage);
+        p.add(autoMsg);
+        p.add(back);
+
+        // Title
+        JLabel title = new JLabel("🛠️ SYSTEM AUTOMATION PANEL 🛠️", JLabel.CENTER);
+        title.setBounds(0, 20, 950, 40);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(Color.BLUE);
+        p.add(title);
+
+        applyTheme(p);
+        return p;
+    }
+
+    // ================= MOOD / THEME =================
+    JPanel mood() {
+        JPanel p = new JPanel(null);
+        String[] moods = {"❤️ Love", "💕 Friendly", "🤎 Calm", "💙 Cool", "😎 Night", "🌇 Sunset", "👑 Royal", "🌿 Fresh"};
+        Color[] colors = {Color.RED, Color.PINK, new Color(245,245,220), Color.CYAN, Color.DARK_GRAY, Color.ORANGE, new Color(128,0,128), Color.GREEN};
+
+        int x = 80, y = 150;
+        for(int i=0; i<moods.length; i++) {
+            JButton b = new JButton(moods[i]);
+            styleButton(b);
+            b.setBounds(x,y,150,40);
+            Color c = colors[i];
+            final int index = i;
+            b.addActionListener(e -> {
+                theme = c;
+                applyTheme(mainPanel);
+                repaint();
+            });
+            p.add(b);
+            x += 170;
+            if(x > 700) {
+                x = 80;
+                y += 70;
+            }
+        }
+
+        JButton back = new JButton("Back");
+        styleButton(back);
+        back.setBounds(20,500,100,35);
+        back.addActionListener(e -> card.show(mainPanel,"login"));
+        p.add(back);
+        applyTheme(p);
+        return p;
+    }
+
+    // ================= THANK YOU SCREEN =================
+    JPanel thankyou() {
+        JPanel p = new JPanel(null);
+        JLabel t = new JLabel("💚 💕 Thank You for Using our Chat Box💕****Hope You Like It  💚");
+        t.setBounds(200,250,600,40);
+        t.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        p.add(t);
+        applyTheme(p);
+        return p;
+    }
+
+    // ================= MAIN METHOD =================
+    public static void main(String[] args) {
+        new WhatsAppSystem();
+    }
+}
